@@ -37,8 +37,8 @@ class Coordinates
         compute_coord(y, integer_coords[1], dx, center[1]);
         compute_coord(z, integer_coords[2], dx, center[2]);
 #elif DEFAULT_TENSOR_DIM == AMREX_SPACEDIM + 1 && AMREX_SPACEDIM == 2
-        y = 0;
-        compute_coord(z, integer_coords[1], dx, center[1]);
+        z = 0;
+        compute_coord(y, integer_coords[1], dx, center[1]);
 #else
 #ifdef AMREX_SPACEDIM
 #error compute_coord has not got your dimension combination implemented.
