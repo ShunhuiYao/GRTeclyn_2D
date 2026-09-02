@@ -14,13 +14,24 @@
 #include <AMReX_REAL.H>
 #include <array>
 
+#if DEFAULT_TENSOR_DIM == AMREX_SPACEDIM + 1 && AMREX_SPACEDIM == 2
+#include "Coordinates.hpp"
+#include "CartoonDerivs.hpp"
+#endif
+
 using namespace amrex::literals;
 
 class FourthOrderDerivatives : protected DerivativeBase
 {
   public:
     AMREX_GPU_HOST_DEVICE
-    FourthOrderDerivatives(amrex::Real dx) : DerivativeBase(dx) {}
+    FourthOrderDerivatives(amrex::Real dx) : DerivativeBase(dx) 
+    {
+        GRParmParse geom.pp("geometry");
+        center = geom.pp.getarr("center");
+    }
+
+    std::array<amrex::Real, AMREX_SPACEDIM> center;
 
     // NOLINTBEGIN(bugprone-easily-swappable-parameters)
 
@@ -53,8 +64,9 @@ class FourthOrderDerivatives : protected DerivativeBase
         }
 #if DEFAULT_TENSOR_DIM == AMREX_SPACEDIM + 1 && AMREX_SPACEDIM == 2
         // Fill cartoon derivatives
+        // For a scalar, the d/dz derivative is zero
+        d1(2) = 0.0;
 #endif
-
         return d1;
     }
 
@@ -68,17 +80,24 @@ class FourthOrderDerivatives : protected DerivativeBase
         const auto *state_ptr_xyz = state.ptr(ix, iy, iz);
         const auto strides        = get_strides(state);
 
+        Tensor::Rank1 V;
         FOR (icomp)
         {
             const int ivar      = ivar_0 + icomp;
             const auto *var_ptr = get_var_ptr(ivar, state_ptr_xyz, strides);
+            V(icomp) = *var_ptr;
             FORSPACEDIM (idir)
             {
                 d1(icomp, idir) = diff1(var_ptr, strides[idir]);
             }
         }
+
 #if DEFAULT_TENSOR_DIM == AMREX_SPACEDIM + 1 && AMREX_SPACEDIM == 2
         // Fill cartoon derivatives
+        Coordinates coords(amrex::InVect(AMREX_D_DECL(ix, iy, iz)), dx,
+                           center);
+        const amrex::Real one_over_y = 1.0 / coords.y;
+        CartoonDerivs::fill_cartoon_derivs_d1_vector(V, one_over_y, d1);
 #endif
         return d1;
     }
@@ -93,11 +112,12 @@ class FourthOrderDerivatives : protected DerivativeBase
         const auto *state_ptr_xyz = state.ptr(ix, iy, iz);
         const auto strides        = get_strides(state);
 
+        Tensor::Sym12Rank2 T{};
         for (int ivar = 0; ivar < NUM_SYM_IDXS; ++ivar)
         {
             const auto *var_ptr =
                 get_var_ptr(ivar_0 + ivar, state_ptr_xyz, strides);
-
+            T(ivar) = *var_ptr;
             FORSPACEDIM (idir)
             {
                 d1(ivar, idir) = diff1(var_ptr, strides[idir]);
@@ -105,6 +125,10 @@ class FourthOrderDerivatives : protected DerivativeBase
         }
 #if DEFAULT_TENSOR_DIM == AMREX_SPACEDIM + 1 && AMREX_SPACEDIM == 2
         // Fill cartoon derivatives
+        Coordinates coords(amrex::InVect(AMREX_D_DECL(ix, iy, iz)), dx,
+                           center);
+        const amrex::Real one_over_y = 1.0 / coords.y;
+        CartoonDerivs::fill_cartoon_derivs_d1_sym_tensor(T, one_over_y, d1);
 #endif
         return d1;
     }
@@ -119,18 +143,25 @@ class FourthOrderDerivatives : protected DerivativeBase
         const auto *state_ptr_xyz = state.ptr(ix, iy, iz);
         const auto strides        = get_strides(state);
 
+        Tensor::Rank2 T{};
         int ivar{ivar_0};
         FOR (icomp, jcomp)
         {
             const auto *var_ptr = get_var_ptr(ivar, state_ptr_xyz, strides);
+            T(icomp, jcomp) = *var_ptr;
             FORSPACEDIM (idir)
             {
                 d1(icomp, jcomp, idir) = diff1(var_ptr, strides[idir]);
             }
             ++ivar;
         }
+
 #if DEFAULT_TENSOR_DIM == AMREX_SPACEDIM + 1 && AMREX_SPACEDIM == 2
         // Fill cartoon derivatives
+        Coordinates coords(amrex::InVect(AMREX_D_DECL(ix, iy, iz)), dx,
+                           center);
+        const amrex::Real one_over_y = 1.0 / coords.y;
+        CartoonDerivs::fill_cartoon_derivs_d1_tensor(T, one_over_y, d1);
 #endif
         return d1;
     }
@@ -224,12 +255,22 @@ class FourthOrderDerivatives : protected DerivativeBase
 
         d2(0, 0) = diff2(var_ptr, strides[0]);
         d2(1, 1) = diff2(var_ptr, strides[1]);
-        d2(2, 2) = diff2(var_ptr, strides[2]);
-
         d2(0, 1) = mixed_diff2(var_ptr, strides[0], strides[1]);
+#if DEFAULT_TENSOR_DIM == AMREX_SPACEDIM && AMREX_SPACEDIM == 3
+        d2(2, 2) = diff2(var_ptr, strides[2]);
         d2(0, 2) = mixed_diff2(var_ptr, strides[0], strides[2]);
         d2(1, 2) = mixed_diff2(var_ptr, strides[1], strides[2]);
-
+#elif DEFAULT_TENSOR_DIM == AMREX_SPACEDIM + 1 && AMREX_SPACEDIM == 2
+        d2(0, 2) = 0.0;
+        d2(1, 2) = 0.0;
+        // Fill cartoon derivatives
+        const amrex:: Real dy_S;
+        dy_S = diff1(var_ptr, strides[1]);
+        Coordinates coords(amrex::InVect(AMREX_D_DECL(ix, iy, iz)), dx,
+                           center);
+        const amrex::Real one_over_y = 1.0 / coords.y;
+        CartoonDerivs::fill_cartoon_derivs_d2_scalar(d2, dy_S, one_over_y);
+#endif
         return d2;
     }
 
@@ -243,6 +284,7 @@ class FourthOrderDerivatives : protected DerivativeBase
         const auto *state_ptr_xyz = state.ptr(ix, iy, iz);
         auto strides              = get_strides(state);
 
+#if DEFAULT_TENSOR_DIM == AMREX_SPACEDIM && AMREX_SPACEDIM == 3
         FOR (icomp)
         {
             const int ivar      = ivar_0 + icomp;
@@ -256,6 +298,31 @@ class FourthOrderDerivatives : protected DerivativeBase
             d2(icomp, 0, 2) = mixed_diff2(var_ptr, strides[0], strides[2]);
             d2(icomp, 1, 2) = mixed_diff2(var_ptr, strides[1], strides[2]);
         }
+#elif DEFAULT_TENSOR_DIM == AMREX_SPACEDIM + 1 && AMREX_SPACEDIM == 2
+        Tensor::Rank1 V;
+        Tensor::Rank2 d1_V;
+        FOR (icomp)
+        {
+            const int ivar      = ivar_0 + icomp;
+            const auto *var_ptr = get_var_ptr(ivar, state_ptr_xyz, strides);
+            V(icomp) = *var_ptr;
+
+            FORSPACEDIM(idir)
+            {
+                d1_V(icomp, idir) = diff1(var_ptr, strides[idir]);
+                d2(icomp, idir, idir) = diff2(var_ptr, strides[idir]);
+            }
+
+            d2(icomp, 0, 1) = mixed_diff2(var_ptr, strides[0], strides[1]);
+        }
+        // Fill cartoon derivatives
+        Coordinates coords(amrex::InVect(AMREX_D_DECL(ix, iy, iz)), dx,
+                           center);
+        const amrex::Real one_over_y = 1.0 / coords.y;
+        const amrex::Real one_over_y2 = one_over_y * one_over_y;
+        CartoonDerivs::fill_cartoon_derivs_d1_vector(V, d1_V, one_over_y, 
+                                                     one_over_y2, d2);
+#endif
         return d2;
     }
 
@@ -270,6 +337,7 @@ class FourthOrderDerivatives : protected DerivativeBase
         auto strides              = get_strides(state);
 
         int ivar{ivar_0};
+#if DEFAULT_TENSOR_DIM == AMREX_SPACEDIM && AMREX_SPACEDIM == 3
         FOR (icomp)
             FOR (jcomp)
             {
@@ -288,7 +356,33 @@ class FourthOrderDerivatives : protected DerivativeBase
 
                 ++ivar;
             }
+#elif DEFAULT_TENSOR_DIM == AMREX_SPACEDIM + 1 && AMREX_SPACEDIM == 2
+        Tensor::Rank2 T;
+        Tensor::Rank3 d1_T;
+        FOR (icomp, jcomp)
+        {
+            const auto *var_ptr = get_var_ptr(ivar, state_ptr_xyz, strides);
+            T(icomp, jcomp) = *var_ptr;
 
+            FORSPACEDIM(idir)
+            {
+                d1_T(icomp, jcomp, idir) = diff1(var_ptr, strides[idir]);
+                d2(icomp, jcomp, idir, idir) = diff2(var_ptr, strides[idir]);
+            }
+
+            d2(icomp, jcomp, 0, 1) =
+                mixed_diff2(var_ptr, strides[0], strides[1]);
+
+            ++ivar;
+        }
+        // Fill cartoon derivatives
+        Coordinates coords(amrex::InVect(AMREX_D_DECL(ix, iy, iz)), dx,
+                           center);
+        const amrex::Real one_over_y = 1.0 / coords.y;
+        const amrex::Real one_over_y2 = one_over_y * one_over_y;
+        CartoonDerivs::fill_cartoon_derivs_d1_tensor(T, d1_T, one_over_y,
+                                                     one_over_y2, d2);
+#endif
         return d2;
     }
 
@@ -302,6 +396,7 @@ class FourthOrderDerivatives : protected DerivativeBase
         const auto *state_ptr_xyz = state.ptr(ix, iy, iz);
         auto strides              = get_strides(state);
 
+#if DEFAULT_TENSOR_DIM == AMREX_SPACEDIM && AMREX_SPACEDIM == 3
         FOR (icomp)
             FOR (jcomp)
             {
@@ -319,7 +414,29 @@ class FourthOrderDerivatives : protected DerivativeBase
                 d2(icomp, jcomp, 1, 2) =
                     mixed_diff2(var_ptr, strides[1], strides[2]);
             }
+#elif DEFAULT_TENSOR_DIM == AMREX_SPACEDIM + 1 && AMREX_SPACEDIM == 2
+        Tensor::Sym12Rank2 T;
+        Tensor::Sym12Rank3 d1_T;
+        for (int icomp = 0; icomp < NUM_SYM_IDXS; ++icomp)
+        {
+            const int ivar      = ivar_0 + icomp;
+            const auto *var_ptr = get_var_ptr(ivar, state_ptr_xyz, strides);
 
+            T(icomp) = *var_ptr;
+            FORSPACEDIM(idir)
+            {
+                d1_T(icomp, idir) = diff1(var_ptr, strides[idir]);
+                d2(icomp, idir, idir) = diff2(var_ptr, strides[idir]);
+            }
+            d2(icomp, 0, 1) = mixed_diff2(var_ptr, strides[0], strides[1]);
+            // Fill cartoon derivatives
+            Coordinates coords(amrex::InVect(AMREX_D_DECL(ix, iy, iz)), dx, center);
+            const amrex::Real one_over_y = 1.0 / coords.y;
+            const amrex::Real one_over_y2 = one_over_y * one_over_y;
+            CartoonDerivs::fill_cartoon_derivs_d2_sym_tensor(T, d1_T, one_over_y, 
+                                                             one_over_y2, d2);       
+        }
+#endif
         return d2;
     }
 
