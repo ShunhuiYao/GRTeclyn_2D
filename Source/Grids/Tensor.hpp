@@ -30,7 +30,7 @@ sym_var_idx(const int ivar, const int i, const int j) noexcept
 #define SPACETIME_DIM (GR_SPACEDIM + 1)
 
 // Number of unique indices after accounting for symmetry
-#define NUM_SYM_IDXS (AMREX_SPACEDIM * (AMREX_SPACEDIM + 1) / 2)
+#define NUM_SYM_IDXS (DEFAULT_TENSOR_DIM * (DEFAULT_TENSOR_DIM + 1) / 2)
 
 namespace Tensor
 {
@@ -300,18 +300,18 @@ AMREX_GPU_HOST_DEVICE struct GeneralRank<4, DIM1, DIM2, DIM3, DIM4>
 
 // The default dimension use AMREX_SPACEDIM aka TENSOR_DIM if not otherwise
 // defined
-using Rank1 = GeneralRank<1, AMREX_SPACEDIM>;
-using Rank2 = GeneralRank<2, AMREX_SPACEDIM, AMREX_SPACEDIM>;
-using Rank3 = GeneralRank<3, AMREX_SPACEDIM, AMREX_SPACEDIM, AMREX_SPACEDIM>;
-using Rank4 = GeneralRank<4, AMREX_SPACEDIM, AMREX_SPACEDIM, AMREX_SPACEDIM,
-                          AMREX_SPACEDIM>;
+using Rank1 = GeneralRank<1, DEFAULT_TENSOR_DIM>;
+using Rank2 = GeneralRank<2, DEFAULT_TENSOR_DIM, DEFAULT_TENSOR_DIM>;
+using Rank3 = GeneralRank<3, DEFAULT_TENSOR_DIM, DEFAULT_TENSOR_DIM, DEFAULT_TENSOR_DIM>;
+using Rank4 = GeneralRank<4, DEFAULT_TENSOR_DIM, DEFAULT_TENSOR_DIM, DEFAULT_TENSOR_DIM,
+                          DEFAULT_TENSOR_DIM>;
 
 // These are for symmetric tensors
 using Sym12Rank2      = GeneralRank<1, NUM_SYM_IDXS>;
 using Sym12Sym34Rank4 = GeneralRank<2, NUM_SYM_IDXS, NUM_SYM_IDXS>;
-using Sym12Rank3      = GeneralRank<2, NUM_SYM_IDXS, AMREX_SPACEDIM>;
-using Sym23Rank3      = GeneralRank<2, AMREX_SPACEDIM, NUM_SYM_IDXS>;
-using Sym34Rank4 = GeneralRank<3, AMREX_SPACEDIM, AMREX_SPACEDIM, NUM_SYM_IDXS>;
+using Sym12Rank3      = GeneralRank<2, NUM_SYM_IDXS, DEFAULT_TENSOR_DIM>;
+using Sym23Rank3      = GeneralRank<2, DEFAULT_TENSOR_DIM, NUM_SYM_IDXS>;
+using Sym34Rank4 = GeneralRank<3, DEFAULT_TENSOR_DIM, DEFAULT_TENSOR_DIM, NUM_SYM_IDXS>;
 
 // These are for 4D tensors
 using SpacetimeRank4 =

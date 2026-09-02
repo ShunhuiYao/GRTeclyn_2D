@@ -32,8 +32,9 @@ namespace CartoonDerivs
 {
 // d/dz of a contravariant vector V^i (shift, B, Gamma):
 // d/dz V^y = -V^z/y ; d/dz V^z = V^y/y ; d/dz V^x = 0
+AMREX_GPU_HOST_DEVICE AMREX_FORCE_INLINE
 void fill_cartoon_derivs_d1_vector(const Tensor::Rank1 &V, 
-                                   const double one_over_y,Tensor::Rank2 &d1_V)
+                                   const amrex::Real one_over_y,Tensor::Rank2 &d1_V)
 {
     d1_V(1, 2) = -V(2) * one_over_y;
     d1_V(2, 2) = V(1) * one_over_y;
@@ -43,8 +44,9 @@ void fill_cartoon_derivs_d1_vector(const Tensor::Rank1 &V,
 // d/dz T_{xy} = -T_{xz}/y ; d/dz T_{xz} = T_{xy}/y
 // d/dz T_{yy} = -2 T_{yz}/y ; d/dz T_{zz} = 2 T_{yz}/y
 // d/dz T_{yz} = (T_{yy}-T_{zz})/y ; d/dz T_{xx} = 0
+AMREX_GPU_HOST_DEVICE AMREX_FORCE_INLINE
 void fill_cartoon_derivs_d1_sym_tensor(const Tensor::Sym12Rank2 &T,
-                                       const double one_over_y,
+                                       const amrex::Real one_over_y,
                                        Tensor::Sym12Rank3 &d1_T)
 {
     // ordering below 0: T11, 1: T12, 2: T13, 3: T22, 4: T23, 5: T33
@@ -55,8 +57,9 @@ void fill_cartoon_derivs_d1_sym_tensor(const Tensor::Sym12Rank2 &T,
     d1_T(5, 2) = 2. * T(4) * one_over_y;
 }
 
-void fill_cartoon_derivs_d1_tensor(const Tensor::Rank2 &T, 
-                                   const double one_over_y,
+AMREX_GPU_HOST_DEVICE AMREX_FORCE_INLINE
+void fill_cartoon_derivs_d1_tensor(const Tensor::Rank2 &T,
+                                   const amrex::Real one_over_y,
                                    Tensor::Rank3 &d1_T)
 {
     d1_T(1, 0, 2) = -T(0, 2) * one_over_y;
@@ -71,21 +74,23 @@ void fill_cartoon_derivs_d1_tensor(const Tensor::Rank2 &T,
     d1_T(1, 2, 2) = (T(1, 1) - T(2, 2)) * one_over_y;
     d1_T(2, 1, 2) = d1_T(1, 2, 2);
 
-} 
+}
 
 // d/dz d/dz of a scalar S (chi, lapse)
-void fill_cartoon_derivs_d2_scalar(const double dy_S, 
-                                   const double one_over_y, 
-                                   Tensor::Rank2 &d2_S)
+AMREX_GPU_HOST_DEVICE AMREX_FORCE_INLINE
+void fill_cartoon_derivs_d2_scalar(const amrex::Real dy_S,
+                                   const amrex::Real one_over_y,
+                                   Tensor::Sym12Rank2 &d2_S)
 {
     d2_S(2, 2) = dy_S * one_over_y;
 }
 
 // d/dk d/dz and d/dz d/dz of a contravariant vector V^i (shift, Gamma).
+AMREX_GPU_HOST_DEVICE AMREX_FORCE_INLINE
 void fill_cartoon_derivs_d2_vector(const Tensor::Rank1 &V,
                                    const Tensor::Rank2 &d1_V,
-                                   const double one_over_y,
-                                   const double one_over_y2,
+                                   const amrex::Real one_over_y,
+                                   const amrex::Real one_over_y2,
                                    Tensor::Sym23Rank3 &d2_V)
 {
     FORSPACEDIM(k)
@@ -109,10 +114,11 @@ void fill_cartoon_derivs_d2_vector(const Tensor::Rank1 &V,
 }
 
 // d/dk d/dz and d/dz d/dz of a  covariant tensor T_{ij} (h, A).
-void fill_cartoon_derivs_d2_tensor(const Tensor::Rank2 &T, 
+AMREX_GPU_HOST_DEVICE AMREX_FORCE_INLINE
+void fill_cartoon_derivs_d2_tensor(const Tensor::Rank2 &T,
                                    const Tensor::Rank3 &d1_T,
-                                   const double one_over_y,
-                                   const double one_over_y2,
+                                   const amrex::Real one_over_y,
+                                   const amrex::Real one_over_y2,
                                    Tensor::Sym34Rank4 &d2_T)
 {
     FORSPACEDIM(k)
@@ -156,12 +162,13 @@ void fill_cartoon_derivs_d2_tensor(const Tensor::Rank2 &T,
     d2_T(2, 1, 2, 2) = d2_T(1, 2, 2, 2);
 
 
-} 
+}
 
-void fill_cartoon_derivs_d2_sym_tensor(const Tensor::Sym12Rank2 &T, 
+AMREX_GPU_HOST_DEVICE AMREX_FORCE_INLINE
+void fill_cartoon_derivs_d2_sym_tensor(const Tensor::Sym12Rank2 &T,
                                    const Tensor::Sym12Rank3 &d1_T,
-                                   const double one_over_y,
-                                   const double one_over_y2,
+                                   const amrex::Real one_over_y,
+                                   const amrex::Real one_over_y2,
                                    Tensor::Sym12Sym34Rank4 &d2_T)
 {
     FORSPACEDIM(k)

@@ -73,10 +73,18 @@ class Coordinates
         amrex::Real y = NAN;
         amrex::Real z = NAN;
 
-        // Note that this is not currently dimension independent
         compute_coord(x, integer_coords[0], dx, center[0]);
+#if DEFAULT_TENSOR_DIM == AMREX_SPACEDIM && AMREX_SPACEDIM == 3
         compute_coord(y, integer_coords[1], dx, center[1]);
         compute_coord(z, integer_coords[2], dx, center[2]);
+#elif DEFAULT_TENSOR_DIM == AMREX_SPACEDIM + 1 && AMREX_SPACEDIM == 2
+        z = 0;
+        compute_coord(y, integer_coords[1], dx, center[1]);
+#else
+#ifdef AMREX_SPACEDIM
+#error compute_coord has not got your dimension combination implemented.
+#endif
+#endif
 
         amrex::Real r = std::sqrt(x * x + y * y + z * z);
         return std::max(r, 1.0e-6_rt);

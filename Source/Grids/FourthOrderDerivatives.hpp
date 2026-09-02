@@ -15,7 +15,6 @@
 #include <array>
 
 #if DEFAULT_TENSOR_DIM == AMREX_SPACEDIM + 1 && AMREX_SPACEDIM == 2
-#include "Coordinates.hpp"
 #include "CartoonDerivs.hpp"
 #endif
 
@@ -25,13 +24,7 @@ class FourthOrderDerivatives : protected DerivativeBase
 {
   public:
     AMREX_GPU_HOST_DEVICE
-    FourthOrderDerivatives(amrex::Real dx) : DerivativeBase(dx) 
-    {
-        GRParmParse geom.pp("geometry");
-        center = geom.pp.getarr("center");
-    }
-
-    std::array<amrex::Real, AMREX_SPACEDIM> center;
+    FourthOrderDerivatives(amrex::Real dx) : DerivativeBase(dx){}
 
     // NOLINTBEGIN(bugprone-easily-swappable-parameters)
 
@@ -94,9 +87,8 @@ class FourthOrderDerivatives : protected DerivativeBase
 
 #if DEFAULT_TENSOR_DIM == AMREX_SPACEDIM + 1 && AMREX_SPACEDIM == 2
         // Fill cartoon derivatives
-        Coordinates coords(amrex::InVect(AMREX_D_DECL(ix, iy, iz)), dx,
-                           center);
-        const amrex::Real one_over_y = 1.0 / coords.y;
+        const amrex::Real y = (iy + 0.5) * m_dx;
+        const amrex::Real one_over_y = 1.0 / y;
         CartoonDerivs::fill_cartoon_derivs_d1_vector(V, one_over_y, d1);
 #endif
         return d1;
@@ -125,9 +117,8 @@ class FourthOrderDerivatives : protected DerivativeBase
         }
 #if DEFAULT_TENSOR_DIM == AMREX_SPACEDIM + 1 && AMREX_SPACEDIM == 2
         // Fill cartoon derivatives
-        Coordinates coords(amrex::InVect(AMREX_D_DECL(ix, iy, iz)), dx,
-                           center);
-        const amrex::Real one_over_y = 1.0 / coords.y;
+        const amrex::Real y = (iy + 0.5) * m_dx;
+        const amrex::Real one_over_y = 1.0 / y;
         CartoonDerivs::fill_cartoon_derivs_d1_sym_tensor(T, one_over_y, d1);
 #endif
         return d1;
@@ -158,9 +149,8 @@ class FourthOrderDerivatives : protected DerivativeBase
 
 #if DEFAULT_TENSOR_DIM == AMREX_SPACEDIM + 1 && AMREX_SPACEDIM == 2
         // Fill cartoon derivatives
-        Coordinates coords(amrex::InVect(AMREX_D_DECL(ix, iy, iz)), dx,
-                           center);
-        const amrex::Real one_over_y = 1.0 / coords.y;
+        const amrex::Real y = (iy + 0.5) * m_dx;
+        const amrex::Real one_over_y = 1.0 / y;
         CartoonDerivs::fill_cartoon_derivs_d1_tensor(T, one_over_y, d1);
 #endif
         return d1;
@@ -264,12 +254,11 @@ class FourthOrderDerivatives : protected DerivativeBase
         d2(0, 2) = 0.0;
         d2(1, 2) = 0.0;
         // Fill cartoon derivatives
-        const amrex:: Real dy_S;
+        amrex:: Real dy_S;
         dy_S = diff1(var_ptr, strides[1]);
-        Coordinates coords(amrex::InVect(AMREX_D_DECL(ix, iy, iz)), dx,
-                           center);
-        const amrex::Real one_over_y = 1.0 / coords.y;
-        CartoonDerivs::fill_cartoon_derivs_d2_scalar(d2, dy_S, one_over_y);
+        const amrex::Real y = (iy + 0.5) * m_dx;
+        const amrex::Real one_over_y = 1.0 / y;
+        CartoonDerivs::fill_cartoon_derivs_d2_scalar( dy_S, one_over_y,d2);
 #endif
         return d2;
     }
@@ -316,11 +305,10 @@ class FourthOrderDerivatives : protected DerivativeBase
             d2(icomp, 0, 1) = mixed_diff2(var_ptr, strides[0], strides[1]);
         }
         // Fill cartoon derivatives
-        Coordinates coords(amrex::InVect(AMREX_D_DECL(ix, iy, iz)), dx,
-                           center);
-        const amrex::Real one_over_y = 1.0 / coords.y;
+        const amrex::Real y = (iy + 0.5) * m_dx;
+        const amrex::Real one_over_y = 1.0 / y;
         const amrex::Real one_over_y2 = one_over_y * one_over_y;
-        CartoonDerivs::fill_cartoon_derivs_d1_vector(V, d1_V, one_over_y, 
+        CartoonDerivs::fill_cartoon_derivs_d2_vector(V, d1_V, one_over_y,
                                                      one_over_y2, d2);
 #endif
         return d2;
@@ -376,11 +364,10 @@ class FourthOrderDerivatives : protected DerivativeBase
             ++ivar;
         }
         // Fill cartoon derivatives
-        Coordinates coords(amrex::InVect(AMREX_D_DECL(ix, iy, iz)), dx,
-                           center);
-        const amrex::Real one_over_y = 1.0 / coords.y;
+        const amrex::Real y = (iy + 0.5) * m_dx;
+        const amrex::Real one_over_y = 1.0 / y;
         const amrex::Real one_over_y2 = one_over_y * one_over_y;
-        CartoonDerivs::fill_cartoon_derivs_d1_tensor(T, d1_T, one_over_y,
+        CartoonDerivs::fill_cartoon_derivs_d2_tensor(T, d1_T, one_over_y,
                                                      one_over_y2, d2);
 #endif
         return d2;
@@ -429,13 +416,13 @@ class FourthOrderDerivatives : protected DerivativeBase
                 d2(icomp, idir, idir) = diff2(var_ptr, strides[idir]);
             }
             d2(icomp, 0, 1) = mixed_diff2(var_ptr, strides[0], strides[1]);
-            // Fill cartoon derivatives
-            Coordinates coords(amrex::InVect(AMREX_D_DECL(ix, iy, iz)), dx, center);
-            const amrex::Real one_over_y = 1.0 / coords.y;
-            const amrex::Real one_over_y2 = one_over_y * one_over_y;
-            CartoonDerivs::fill_cartoon_derivs_d2_sym_tensor(T, d1_T, one_over_y, 
-                                                             one_over_y2, d2);       
         }
+        // Fill cartoon derivatives
+        const amrex::Real y = (iy + 0.5) * m_dx;
+        const amrex::Real one_over_y = 1.0 / y;
+        const amrex::Real one_over_y2 = one_over_y * one_over_y;
+        CartoonDerivs::fill_cartoon_derivs_d2_sym_tensor(T, d1_T, one_over_y,
+                                                         one_over_y2, d2);
 #endif
         return d2;
     }
