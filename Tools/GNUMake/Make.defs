@@ -6,6 +6,12 @@ XTRA_CPPFLAGS += -DGRTECLYN_VERSION=\"$(GRTECLYN_VERSION)\"
 
 include $(AMREX_HOME)/Tools/GNUMake/Make.defs
 
+ifeq ($(DIM),2)
+  GRTECLYN_PARTICLE_INTERPOLATOR_DIR := $(GRTECLYN_HOME)/Source/ParticleInterpolator2D
+else
+  GRTECLYN_PARTICLE_INTERPOLATOR_DIR := $(GRTECLYN_HOME)/Source/ParticleInterpolator
+endif
+
 ifeq ($(USE_TWOPUNCTURES),TRUE)
   $(info Loading $(GRTECLYN_HOME)/Tools/GNUMake/packages/Make.twopunctures...)
   include        $(GRTECLYN_HOME)/Tools/GNUMake/packages/Make.twopunctures

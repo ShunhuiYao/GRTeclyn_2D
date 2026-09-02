@@ -22,7 +22,7 @@ GRTECLYN_SOURCE = $(GRTECLYN_HOME)/Source
 
 GRTECLYN_TESTS_HOME = $(GRTECLYN_HOME)/Tests
 
-src_dirs := $(GRTECLYN_SOURCE)/ParticleInterpolator \
+src_dirs := $(GRTECLYN_PARTICLE_INTERPOLATOR_DIR) \
             $(GRTECLYN_SOURCE)/BlackHoles \
             $(GRTECLYN_SOURCE)/CCZ4 \
             $(GRTECLYN_SOURCE)/Grids \

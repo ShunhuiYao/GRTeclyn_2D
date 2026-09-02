@@ -25,10 +25,10 @@ amr.derive_plot_vars = ALL
 #################################################
 # Grid parameters
 
-# Number of cells and physical domain extent on the coarsest level
-amr.n_cell           = 64 64 64
-geometry.prob_extent = 32 32 32
-# geometry.center      = 16 16 16 # defaults to the grid center
+# Number of cells and computational (x, rho) domain extent on the coarsest level
+amr.n_cell           = 64 64
+geometry.prob_extent = 32 32
+# geometry.center      = 16 16 # defaults to the grid center
 
 amr.max_level = 0 # there are max_level + 1 levels
 
@@ -50,11 +50,11 @@ amr.n_error_buf     = 1
 #################################################
 # Boundary condition parameters
 
-# Periodic directions: 0 = false, 1 = true
-geometry.is_periodic = 1 1 1
-# Physical boundary conditions default to UNSET_BC in periodic directions
-# boundary.hi_condition = "UNSET_BC" "UNSET_BC" "UNSET_BC"
-# boundary.lo_condition = "UNSET_BC" "UNSET_BC" "UNSET_BC"
+# Periodic (x, rho) directions: 0 = false, 1 = true
+geometry.is_periodic = 1 0
+# The low-rho face is the symmetry axis; high rho is an outer boundary
+boundary.lo_condition = "UNSET_BC" "REFLECTIVE_BC"
+boundary.hi_condition = "UNSET_BC" "SOMMERFELD_BC"
 
 #################################################
 # Evolution parameters

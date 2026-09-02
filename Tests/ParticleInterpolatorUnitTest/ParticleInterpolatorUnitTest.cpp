@@ -121,7 +121,9 @@ void run_particle_interpolator_test()
             n_local); // for storing state polynomial
         std::vector<amrex::ParticleReal> interp_x_local(n_local);
         std::vector<amrex::ParticleReal> interp_y_local(n_local);
+#if AMREX_SPACEDIM == 3
         std::vector<amrex::ParticleReal> interp_z_local(n_local);
+#endif
 
         for (int j = 0; j < n_local; ++j)
         {
@@ -133,23 +135,39 @@ void run_particle_interpolator_test()
                 center[0] + extract_radius * cos(phi) * sin(theta);
             interp_y_local[j] =
                 center[1] + extract_radius * sin(phi) * sin(theta);
+#if AMREX_SPACEDIM == 3
             interp_z_local[j] = center[2] + extract_radius * cos(theta);
+#endif
         }
 
         // set-up query for derived variable A
         InterpolationQueryParticle query_derived(n_local);
+#if AMREX_SPACEDIM == 3
         query_derived.setCoords(0, interp_x_local.data())
             .setCoords(1, interp_y_local.data())
             .setCoords(2, interp_z_local.data())
             .addComp(0, A_local.data(), VariableType::derived, BCParity::even,
                      Derivative::LOCAL);
+#else
+        query_derived.setCoords(0, interp_x_local.data())
+            .setCoords(1, interp_y_local.data())
+            .addComp(0, A_local.data(), VariableType::derived, BCParity::even,
+                     Derivative::LOCAL);
+#endif
+
 
         // set-up query for state variable B
         InterpolationQueryParticle query_state(n_local);
+#if AMREX_SPACEDIM == 3
         query_state.setCoords(0, interp_x_local.data())
             .setCoords(1, interp_y_local.data())
             .setCoords(2, interp_z_local.data())
             .addComp(c_polystate, B_local.data(), VariableType::state);
+#else
+        query_state.setCoords(0, interp_x_local.data())
+            .setCoords(1, interp_y_local.data())
+            .addComp(c_polystate, B_local.data(), VariableType::state);
+#endif
 
         // set up interpolation using Particles for derived vars
         ParticleInterpolator<1> interpolator_derived;
@@ -170,8 +188,11 @@ void run_particle_interpolator_test()
         {
             amrex::ParticleReal x = interp_x_local[ipoint] - center[0];
             amrex::ParticleReal y = interp_y_local[ipoint] - center[1];
+#if AMREX_SPACEDIM == 3
             amrex::ParticleReal z = interp_z_local[ipoint] - center[2];
-
+#else
+            amrex::ParticleReal z=0.;
+#endif
             amrex::ParticleReal A_known = 42. + x * x + y * y * z * z;
             amrex::ParticleReal B_known = pow(z, 3);
 

@@ -52,9 +52,12 @@ class ParticleInterpolatorLevel : public GRAmrLevel
                 const auto &array = arrs[box_no];
 
                 // compute coordinates
+#if AMREX_SPACEDIM == 3
                 amrex::Real z = prob_lo[2] + (k + 0.5) * dx[2] - center[2];
-
-                // write in
+#else
+                amrex::Real z =0.;
+#endif
+                    // write in
                 array(i, j, k, c_polystate) = z * z * z;
             });
 

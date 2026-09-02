@@ -25,7 +25,7 @@ src_dirs := $(GRTECLYN_SOURCE)/CCZ4 \
             $(GRTECLYN_SOURCE)/IO \
             $(GRTECLYN_SOURCE)/Maths \
             $(GRTECLYN_SOURCE)/Matter \
-            $(GRTECLYN_SOURCE)/ParticleInterpolator \
+            $(GRTECLYN_PARTICLE_INTERPOLATOR_DIR) \
             $(GRTECLYN_SOURCE)/Tagging \
             $(realpath .)
 

@@ -26,7 +26,7 @@ src_dirs := $(GRTECLYN_SOURCE)/BlackHoles \
             $(GRTECLYN_SOURCE)/CCZ4 \
             $(GRTECLYN_SOURCE)/Grids \
             $(GRTECLYN_SOURCE)/GRTeclynCore \
-            $(GRTECLYN_SOURCE)/ParticleInterpolator \
+            $(GRTECLYN_PARTICLE_INTERPOLATOR_DIR) \
             $(GRTECLYN_SOURCE)/IO \
             $(GRTECLYN_SOURCE)/Maths \
             $(GRTECLYN_SOURCE)/Tagging \

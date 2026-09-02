@@ -15,6 +15,7 @@ ipo_out.optrpt
 .*.sw[n-p]
 
 # Example output
+parameters_and_version.txt
 chk*/
 plt*/
 Backtrace.*
