@@ -66,8 +66,8 @@ void puncture_tracker_params_t::check_params()
     pp.get("geometry.center", center);
 
     std::array<amrex::Real, AMREX_SPACEDIM * 2UL> initial_coords{
-        center[0], center[1] - amrex::Real(1.0), center[2],
-        center[0], center[1] + amrex::Real(1.0), center[2]};
+        AMREX_D_DECL(center[0] - amrex::Real(1.0), center[1], center[2]),
+        AMREX_D_DECL(center[0] + amrex::Real(1.0), center[1], center[2])};
     puncture_tracking_pp.queryAdd("initial_coords", initial_coords);
 }
 
@@ -212,7 +212,7 @@ void PunctureTracker<num_punctures>::set_initial_punctures_pc()
             num_punctures,
             [=] AMREX_GPU_DEVICE(int ipuncture)
             {
-                FOR1 (idir)
+                FORSPACEDIM (idir)
                 {
                     auto &puncture_particle = particle_tile_data[ipuncture];
                     puncture_particle.pos(idir) =
@@ -282,7 +282,9 @@ void PunctureTracker<num_punctures>::write_initial_punctures() const
         std::string idx = std::to_string(ipuncture + 1);
         header1_strings[AMREX_SPACEDIM * ipuncture + 0] = "x_" + idx;
         header1_strings[AMREX_SPACEDIM * ipuncture + 1] = "y_" + idx;
+#if AMREX_SPACEDIM==3
         header1_strings[AMREX_SPACEDIM * ipuncture + 2] = "z_" + idx;
+#endif
     }
     punctures_file.write_header_line(header1_strings);
 
@@ -321,7 +323,7 @@ void PunctureTracker<num_punctures>::track(amrex::Real a_time, amrex::Real a_dt,
 
         // We should only need 1 ghost cell as we are doing linear interpolation
         amrex::IntVect ghosts_to_fill = amrex::IntVect::TheUnitVector();
-        state_level.FillBoundary(c_shift1, GR_SPACEDIM, ghosts_to_fill,
+        state_level.FillBoundary(c_shift1, AMREX_SPACEDIM, ghosts_to_fill,
                                  geom.periodicity());
 
         const auto problem_domain_lo = geom.ProbLoArray();
@@ -354,11 +356,11 @@ void PunctureTracker<num_punctures>::track(amrex::Real a_time, amrex::Real a_dt,
 
                         amrex::linear_interpolate_to_particle(
                             p, problem_domain_lo, dxi, &fab_array, shift,
-                            &is_nodal, c_shift1, GR_SPACEDIM, num_arrays);
+                            &is_nodal, c_shift1, AMREX_SPACEDIM, num_arrays);
 
                         if (ipass == 0)
                         {
-                            FOR1 (idir)
+                            FORSPACEDIM (idir)
                             {
                                 p.rdata(idir) = p.pos(idir);
                                 p.pos(idir) -= static_cast<amrex::ParticleReal>(
@@ -367,7 +369,7 @@ void PunctureTracker<num_punctures>::track(amrex::Real a_time, amrex::Real a_dt,
                         }
                         else
                         {
-                            FOR1 (idir)
+                            FORSPACEDIM (idir)
                             {
                                 p.pos(idir) = p.rdata(idir) -
                                               static_cast<amrex::ParticleReal>(
@@ -378,7 +380,7 @@ void PunctureTracker<num_punctures>::track(amrex::Real a_time, amrex::Real a_dt,
 
                         // make sure the particles don't leave the problem
                         // domain otherwise AMReX will mark them invalid
-                        FOR1 (idir)
+                        FORSPACEDIM (idir)
                         {
                             p.pos(idir) = std::max(
                                 p.pos(idir), static_cast<amrex::ParticleReal>(
@@ -447,7 +449,7 @@ void PunctureTracker<num_punctures>::update_puncture_coords()
                 {
                     auto &p      = punc_particles_data[ipunc];
                     int punc_idx = p.idata(0) - 1;
-                    FOR1 (idir)
+                    FORSPACEDIM (idir)
                     {
                         d_puncture_coords_ptr[linear_idx(punc_idx, idir)] +=
                             p.pos(idir);
