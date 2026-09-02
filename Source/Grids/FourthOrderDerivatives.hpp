@@ -51,6 +51,10 @@ class FourthOrderDerivatives : protected DerivativeBase
         {
             d1(idir) = diff1(var_ptr, strides[idir]);
         }
+#if DEFAULT_TENSOR_DIM == AMREX_SPACEDIM + 1 && AMREX_SPACEDIM == 2
+        // Fill cartoon derivatives
+#endif
+
         return d1;
     }
 
@@ -73,6 +77,9 @@ class FourthOrderDerivatives : protected DerivativeBase
                 d1(icomp, idir) = diff1(var_ptr, strides[idir]);
             }
         }
+#if DEFAULT_TENSOR_DIM == AMREX_SPACEDIM + 1 && AMREX_SPACEDIM == 2
+        // Fill cartoon derivatives
+#endif
         return d1;
     }
 
@@ -96,6 +103,9 @@ class FourthOrderDerivatives : protected DerivativeBase
                 d1(ivar, idir) = diff1(var_ptr, strides[idir]);
             }
         }
+#if DEFAULT_TENSOR_DIM == AMREX_SPACEDIM + 1 && AMREX_SPACEDIM == 2
+        // Fill cartoon derivatives
+#endif
         return d1;
     }
 
@@ -119,6 +129,9 @@ class FourthOrderDerivatives : protected DerivativeBase
             }
             ++ivar;
         }
+#if DEFAULT_TENSOR_DIM == AMREX_SPACEDIM + 1 && AMREX_SPACEDIM == 2
+        // Fill cartoon derivatives
+#endif
         return d1;
     }
 
