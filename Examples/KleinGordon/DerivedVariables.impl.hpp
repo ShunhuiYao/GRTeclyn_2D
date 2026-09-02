@@ -95,7 +95,7 @@ AMREX_FORCE_INLINE void calc_analytic_mf_3d(amrex::MultiFab &mf_out, int dcomp,
         mf_out, mf_out.nGrowVect(),
         [=] AMREX_GPU_DEVICE(int box_no, int i, int j, int k) noexcept
         {
-            amrex::IntVect grid_pos(i, j, k);
+            amrex::IntVect grid_pos(AMREX_D_DECL(i, j, k));
             Coordinates pos(grid_pos, dx[0], center);
 
             arrs[box_no](i, j, k, dcomp) =
@@ -127,7 +127,7 @@ AMREX_FORCE_INLINE void calc_analytic_mf_1d(amrex::MultiFab &mf_out, int dcomp,
         mf_out, mf_out.nGrowVect(),
         [=] AMREX_GPU_DEVICE(int box_no, int i, int j, int k) noexcept
         {
-            amrex::IntVect grid_pos(i, j, k);
+            amrex::IntVect grid_pos(AMREX_D_DECL(i, j, k));
             Coordinates pos(grid_pos, dx[0], center);
 
             arrs[box_no](i, j, k, dcomp) = model.calculate(pos.x, time);

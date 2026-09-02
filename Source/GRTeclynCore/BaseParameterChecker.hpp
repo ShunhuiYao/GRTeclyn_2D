@@ -153,7 +153,7 @@ class BaseParameterChecker
 
         std::array<double, AMREX_SPACEDIM> dx{};
         double dx_tol = 1e-10;
-        FOR (idir)
+        FORSPACEDIM (idir)
         {
             if (prob_extent[idir] <= 0.0)
             {
@@ -161,9 +161,18 @@ class BaseParameterChecker
             }
             dx[idir] = prob_extent[idir] / n_cell[idir];
         }
-        FOR (idir)
+        // FORSPACEDIM (idir)
+        // {
+        //     if (std::abs(dx[idir] - dx[(idir + 2) % 3]) > dx_tol)
+        //     {
+        //         geom_pp.error("prob_extent",
+        //                       "does not give equal dx in each direction with "
+        //                       "provided amr.n_cell");
+        //     }
+        // }
+        for (int idir = 1; idir < AMREX_SPACEDIM; ++idir)
         {
-            if (std::abs(dx[idir] - dx[(idir + 2) % 3]) > dx_tol)
+            if (std::abs(dx[idir] - dx[0]) > dx_tol)
             {
                 geom_pp.error("prob_extent",
                               "does not give equal dx in each direction with "
@@ -174,7 +183,7 @@ class BaseParameterChecker
 
         geom_pp.add("coarsest_dx", coarsest_dx);
 
-        std::array<int, AMREX_SPACEDIM> is_periodic = {0, 0, 0};
+        std::array<int, AMREX_SPACEDIM> is_periodic = {AMREX_D_DECL(0, 0, 0)};
         geom_pp.queryAdd("is_periodic", is_periodic);
 
         // Periodicity and boundaries
@@ -196,7 +205,7 @@ class BaseParameterChecker
         }
 
         std::array<double, AMREX_SPACEDIM> center{};
-        FOR (idir)
+        FORSPACEDIM (idir)
         {
             if ((boundary_params.lo_condition[idir] ==
                  BoundaryConditions::REFLECTIVE_BC) &&
@@ -218,7 +227,7 @@ class BaseParameterChecker
             }
         }
         geom_pp.queryAdd("center", center);
-        FOR (idir)
+        FORSPACEDIM (idir)
         {
             if (center[idir] < 0.0 || center[idir] > prob_extent[idir])
             {
@@ -286,7 +295,7 @@ class BaseParameterChecker
                                  "criterion");
         }
 
-        FOR (idir)
+        FORSPACEDIM (idir)
         {
             if (n_cell[idir] % blocking_factor != 0)
             {

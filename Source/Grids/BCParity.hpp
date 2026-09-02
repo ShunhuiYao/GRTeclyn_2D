@@ -25,13 +25,13 @@ enum class BCParity
 
 static inline const std::map<BCParity, amrex::IntVect> bc_parity_map = {
     {BCParity::even, amrex::IntVect(1)},
-    {BCParity::odd_x, amrex::IntVect(-1, 1, 1)},
-    {BCParity::odd_y, amrex::IntVect(1, -1, 1)},
-    {BCParity::odd_z, amrex::IntVect(1, 1, -1)},
-    {BCParity::odd_xy, amrex::IntVect(-1, -1, 1)},
-    {BCParity::odd_yz, amrex::IntVect(1, -1, -1)},
-    {BCParity::odd_xz, amrex::IntVect(-1, 1, -1)},
-    {BCParity::odd_xyz, amrex::IntVect(-1, -1, -1)},
+    {BCParity::odd_x, amrex::IntVect(AMREX_D_DECL(-1, 1, 1))},
+    {BCParity::odd_y, amrex::IntVect(AMREX_D_DECL(1, -1, 1))},
+    {BCParity::odd_z, amrex::IntVect(AMREX_D_DECL(1, 1, -1))},
+    {BCParity::odd_xy, amrex::IntVect(AMREX_D_DECL(-1, -1, 1))},
+    {BCParity::odd_yz, amrex::IntVect(AMREX_D_DECL(1, -1, -1))},
+    {BCParity::odd_xz, amrex::IntVect(AMREX_D_DECL(-1, 1, -1))},
+    {BCParity::odd_xyz, amrex::IntVect(AMREX_D_DECL(-1, -1, -1))},
 };
 
 #endif

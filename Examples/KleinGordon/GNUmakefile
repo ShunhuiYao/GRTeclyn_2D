@@ -6,6 +6,7 @@ EBASE = KleinGordon
 
 AMREX_HOME ?= $(realpath ../../../amrex)
 
+DIM=2
 
 include $(GRTECLYN_HOME)/Tools/GNUMake/Make.defs
 

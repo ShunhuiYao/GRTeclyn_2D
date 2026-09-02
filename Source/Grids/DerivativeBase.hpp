@@ -28,7 +28,7 @@ class DerivativeBase
     get_var_ptr(const int ivar, const amrex::Real *state_ptr_xyz,
                 const amrex::GpuArray<int, AMREX_SPACEDIM + 1> strides) noexcept
     {
-        return state_ptr_xyz + ivar * strides[3];
+        return state_ptr_xyz + ivar * strides[AMREX_SPACEDIM];
     }
 
     [[nodiscard]] AMREX_GPU_DEVICE
@@ -39,7 +39,7 @@ class DerivativeBase
         int k_stride = static_cast<int>(state.stride.a[1]);
         int n_stride = static_cast<int>(state.stride.a[2]);
 
-        amrex::GpuArray<int, AMREX_SPACEDIM + 1> strides{1, j_stride, k_stride,
+        amrex::GpuArray<int, AMREX_SPACEDIM + 1> strides{AMREX_D_DECL(1, j_stride, k_stride),
                                                          n_stride};
 
         return strides;

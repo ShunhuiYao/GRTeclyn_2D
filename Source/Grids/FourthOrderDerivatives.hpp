@@ -47,7 +47,7 @@ class FourthOrderDerivatives : protected DerivativeBase
         const auto *state_ptr_xyz = state.ptr(ix, iy, iz);
         const auto strides        = get_strides(state);
         const auto *var_ptr       = get_var_ptr(ivar, state_ptr_xyz, strides);
-        FOR (idir)
+        FORSPACEDIM (idir)
         {
             d1(idir) = diff1(var_ptr, strides[idir]);
         }
@@ -68,7 +68,7 @@ class FourthOrderDerivatives : protected DerivativeBase
         {
             const int ivar      = ivar_0 + icomp;
             const auto *var_ptr = get_var_ptr(ivar, state_ptr_xyz, strides);
-            FOR (idir)
+            FORSPACEDIM (idir)
             {
                 d1(icomp, idir) = diff1(var_ptr, strides[idir]);
             }
@@ -91,7 +91,7 @@ class FourthOrderDerivatives : protected DerivativeBase
             const auto *var_ptr =
                 get_var_ptr(ivar_0 + ivar, state_ptr_xyz, strides);
 
-            FOR (idir)
+            FORSPACEDIM (idir)
             {
                 d1(ivar, idir) = diff1(var_ptr, strides[idir]);
             }
@@ -113,7 +113,7 @@ class FourthOrderDerivatives : protected DerivativeBase
         FOR (icomp, jcomp)
         {
             const auto *var_ptr = get_var_ptr(ivar, state_ptr_xyz, strides);
-            FOR (idir)
+            FORSPACEDIM (idir)
             {
                 d1(icomp, jcomp, idir) = diff1(var_ptr, strides[idir]);
             }
@@ -131,9 +131,9 @@ class FourthOrderDerivatives : protected DerivativeBase
                     int first_var = 0) const
     {
         const auto *state_ptr_xyz = state.ptr(ix, iy, iz);
-        amrex::GpuArray<int, AMREX_SPACEDIM> strides{
+        amrex::GpuArray<int, AMREX_SPACEDIM> strides{AMREX_D_DECL(
             1, static_cast<int>(state.stride.a[0]),
-            static_cast<int>(state.stride.a[1])};
+            static_cast<int>(state.stride.a[1]))};
 
         // NOLINTNEXTLINE(cppcoreguidelines-pro-type-member-init)
         amrex::Array2D<amrex::Real, 0, num_diff_vars - 1, 0, AMREX_SPACEDIM - 1>
@@ -143,7 +143,7 @@ class FourthOrderDerivatives : protected DerivativeBase
         {
             const auto *var_ptr = state_ptr_xyz + ivar * state.stride.a[2];
 
-            FOR (idir)
+            FORSPACEDIM(idir)
             {
                 d1_state(ivar - first_var, idir) =
                     diff1(var_ptr, strides[idir]);
@@ -353,7 +353,7 @@ class FourthOrderDerivatives : protected DerivativeBase
         const auto strides        = get_strides(state);
         const auto *var_ptr       = get_var_ptr(ivar, state_ptr_xyz, strides);
 
-        FOR (idir)
+        FORSPACEDIM (idir)
         {
             const bool shift_positive = (shift_vector(idir) > 0.0);
             advec += advection_term(var_ptr, shift_vector(idir), strides[idir],
@@ -465,7 +465,7 @@ class FourthOrderDerivatives : protected DerivativeBase
         const auto *state_ptr_xyz = state.ptr(ix, iy, iz);
         const auto strides        = get_strides(state);
 
-        FOR (idir)
+        FORSPACEDIM (idir)
         {
             const auto stride  = strides[idir];
             diss              += sigma_coeff *

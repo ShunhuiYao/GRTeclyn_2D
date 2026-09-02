@@ -31,7 +31,7 @@ BoundaryConditions::params_t::read_conditions(GRParmParse &a_boundary_pp,
     a_boundary_pp.get(a_name, condition_names);
 
     std::array<int, AMREX_SPACEDIM> conditions{};
-    FOR (idir)
+    FORSPACEDIM (idir)
     {
         const auto boundary_condition_entry =
             boundary_conditions_by_name.find(condition_names[idir]);
@@ -56,7 +56,7 @@ BoundaryConditions::params_t::read_conditions(GRParmParse &a_boundary_pp,
 bool BoundaryConditions::params_t::boundary_exists(
     const int a_boundary_condition) const
 {
-    FOR (idir)
+    FORSPACEDIM (idir)
     {
         if (!is_periodic[idir] && (hi_condition[idir] == a_boundary_condition ||
                                    lo_condition[idir] == a_boundary_condition))
@@ -75,10 +75,10 @@ void BoundaryConditions::params_t::fill_params()
     GRParmParse geom_pp("geometry");
     GRParmParse pp;
 
-    std::array<int, AMREX_SPACEDIM> is_periodic_int = {0, 0, 0};
+    std::array<int, AMREX_SPACEDIM> is_periodic_int = {AMREX_D_DECL(0, 0, 0)};
     geom_pp.get("is_periodic", is_periodic_int);
 
-    FOR (idir)
+    FORSPACEDIM (idir)
     {
         this->is_periodic[idir] = static_cast<bool>(is_periodic_int[idir]);
     }
@@ -107,7 +107,7 @@ void BoundaryConditions::params_t::check_params()
 
     std::array<int, AMREX_SPACEDIM> is_periodic_int{};
     geom_pp.get("is_periodic", is_periodic_int);
-    FOR (idir)
+    FORSPACEDIM (idir)
     {
         if (is_periodic_int[idir] != 0 && is_periodic_int[idir] != 1)
         {
@@ -122,7 +122,7 @@ void BoundaryConditions::params_t::check_params()
     {
         std::string ignored_directions;
         std::string unset_directions;
-        FOR (idir)
+        FORSPACEDIM (idir)
         {
             if (is_periodic_int[idir] == 1 && a_conditions[idir] != UNSET_BC)
             {
@@ -256,8 +256,14 @@ void BoundaryConditions::apply_sommerfeld_boundaries(
         }
     }
 
-    AMREX_ASSERT(amrex::almostEqual(m_geom.CellSize(0), m_geom.CellSize(1)) &&
-                 amrex::almostEqual(m_geom.CellSize(0), m_geom.CellSize(2)));
+    // AMREX_ASSERT(amrex::almostEqual(m_geom.CellSize(0), m_geom.CellSize(1)) &&
+    //              amrex::almostEqual(m_geom.CellSize(0), m_geom.CellSize(2)));
+    FORSPACEDIM(idir)
+    {
+        AMREX_ASSERT(amrex::almostEqual(m_geom.CellSize(0),
+                           m_geom.CellSize(idir)));
+    }
+
     const auto dx     = m_geom.CellSize(0);
     amrex::Box domain = m_geom.Domain();
     for (amrex::OrientationIter orit; orit.isValid(); ++orit)
@@ -301,11 +307,11 @@ void BoundaryConditions::apply_sommerfeld_boundaries(
                     valid_sommbox, a_rhs.nComp(),
                     [=] AMREX_GPU_DEVICE(int i, int j, int k, int n) noexcept
                     {
-                        amrex::RealVect loc((i + 0.5) * dx - center[0],
+                        amrex::RealVect loc(AMREX_D_DECL((i + 0.5) * dx - center[0],
                                             (j + 0.5) * dx - center[1],
-                                            (k + 0.5) * dx - center[2]);
+                                            (k + 0.5) * dx - center[2]));
                         amrex::Real tmp = 0.;
-                        amrex::IntVect iv(i, j, k);
+                        amrex::IntVect iv(AMREX_D_DECL(i, j, k));
                         for (int idir2 = 0; idir2 < AMREX_SPACEDIM; ++idir2)
                         {
                             amrex::IntVect iv_offset1 = iv;
@@ -340,8 +346,8 @@ void BoundaryConditions::apply_sommerfeld_boundaries(
                         // asymptotic values - these need to have been set in
                         // the params file
                         amrex::Real radius =
-                            std::sqrt(loc[0] * loc[0] + loc[1] * loc[1] +
-                                      loc[2] * loc[2]);
+                            std::sqrt(AMREX_D_TERM(loc[0] * loc[0], + loc[1] * loc[1], +
+                                      loc[2] * loc[2]));
                         rhs(i, j, k, n) =
                             (asymptotic_values[n] - sol(i, j, k, n) + tmp) *
                             (1. / radius);
