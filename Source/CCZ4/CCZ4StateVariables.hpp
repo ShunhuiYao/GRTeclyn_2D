@@ -55,6 +55,14 @@ enum
 
 namespace CCZ4StateVariables
 {
+#if AMREX_SPACEDIM == 2
+static constexpr BCParity tensor_13_parity = BCParity::odd_xyz;
+static constexpr BCParity vector_3_parity  = BCParity::odd_yz;
+#else
+static constexpr BCParity tensor_13_parity = BCParity::odd_xz;
+static constexpr BCParity vector_3_parity  = BCParity::odd_z;
+#endif
+
 static const amrex::Vector<std::string> names = {
     "chi",
 
@@ -78,37 +86,37 @@ static const amrex::Vector<std::string> names = {
 static const std::array<BCParity, NUM_CCZ4_VARS> parities = {
     BCParity::even, // chi
 
-    BCParity::even,   // h11
-    BCParity::odd_xy, // h12
-    BCParity::odd_xz, // h13
-    BCParity::even,   // h22
-    BCParity::odd_yz, // h23
-    BCParity::even,   // h33
+    BCParity::even,          // h11
+    BCParity::odd_xy,        // h12
+    tensor_13_parity,        // h13
+    BCParity::even,          // h22
+    BCParity::odd_yz,        // h23
+    BCParity::even,          // h33
 
     BCParity::even, // K
 
-    BCParity::even,   // A11
-    BCParity::odd_xy, // A12
-    BCParity::odd_xz, // A13
-    BCParity::even,   // A22
-    BCParity::odd_yz, // A23
-    BCParity::even,   // A33
+    BCParity::even,          // A11
+    BCParity::odd_xy,        // A12
+    tensor_13_parity,        // A13
+    BCParity::even,          // A22
+    BCParity::odd_yz,        // A23
+    BCParity::even,          // A33
 
     BCParity::even, // Theta
 
-    BCParity::odd_x, // Gamma1
-    BCParity::odd_y, // Gamma2
-    BCParity::odd_z, // Gamma3
+    BCParity::odd_x,      // Gamma1
+    BCParity::odd_y,      // Gamma2
+    vector_3_parity,      // Gamma3
 
     BCParity::even, // lapse
 
-    BCParity::odd_x, // shift1
-    BCParity::odd_y, // shift2
-    BCParity::odd_z, // shift3
+    BCParity::odd_x,      // shift1
+    BCParity::odd_y,      // shift2
+    vector_3_parity,      // shift3
 
-    BCParity::odd_x, // B1
-    BCParity::odd_y, // B2
-    BCParity::odd_z, // B3
+    BCParity::odd_x,      // B1
+    BCParity::odd_y,      // B2
+    vector_3_parity,      // B3
 };
 
 static const std::array<amrex::Real, NUM_CCZ4_VARS> asymptotic_values = {

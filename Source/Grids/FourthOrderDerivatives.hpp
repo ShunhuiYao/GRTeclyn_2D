@@ -413,10 +413,16 @@ class FourthOrderDerivatives : protected DerivativeBase
             FORSPACEDIM(idir)
             {
                 d1_T(icomp, idir) = diff1(var_ptr, strides[idir]);
-                d2(icomp, idir, idir) = diff2(var_ptr, strides[idir]);
+                d2(icomp, sym_var_idx(idir, idir)) =
+                    diff2(var_ptr, strides[idir]);
             }
-            d2(icomp, 0, 1) = mixed_diff2(var_ptr, strides[0], strides[1]);
+            d2(icomp, sym_var_idx(0, 1)) =
+                mixed_diff2(var_ptr, strides[0], strides[1]);
         }
+        // Both index pairs in d2 are stored in compressed symmetric form. The
+        // sym_var_idx calls above select the compressed derivative pair while
+        // the two-index accessor selects the compressed tensor component.
+
         // Fill cartoon derivatives
         const amrex::Real y = (iy + 0.5) * m_dx;
         const amrex::Real one_over_y = 1.0 / y;
@@ -505,8 +511,8 @@ class FourthOrderDerivatives : protected DerivativeBase
         }
 #if DEFAULT_TENSOR_DIM == AMREX_SPACEDIM + 1 && AMREX_SPACEDIM == 2
         // Add z derivative for Cartoon reduction
-        amrex::Real sz = shift_vector[2];
-        Tensor2 d1_V = d1_vector(ix, iy, iz, state, ivar0);
+        amrex::Real sz = shift_vector(2);
+        Tensor::Rank2 d1_V = d1_vector(ix, iy, iz, state, ivar0);
         FOR(icomp)
         {
             advec_vector(icomp) += sz * d1_V(icomp, 2);
@@ -529,8 +535,8 @@ class FourthOrderDerivatives : protected DerivativeBase
         }
 #if DEFAULT_TENSOR_DIM == AMREX_SPACEDIM + 1 && AMREX_SPACEDIM == 2
         // Add z derivative for Cartoon reduction
-        amrex::Real sz = shift_vector[2];
-        Tensor3 d1_T = d1_tensor(ix, iy, iz, state, ivar0);
+        amrex::Real sz = shift_vector(2);
+        Tensor::Rank3 d1_T = d1_tensor(ix, iy, iz, state, ivar0);
         FOR(icomp, jcomp)
         {
             advec_tensor(icomp, jcomp) += sz * d1_T(icomp, jcomp, 2);
@@ -553,7 +559,7 @@ class FourthOrderDerivatives : protected DerivativeBase
         }
 #if DEFAULT_TENSOR_DIM == AMREX_SPACEDIM + 1 && AMREX_SPACEDIM == 2
         // Add z derivative for Cartoon reduction
-        amrex::Real sz = shift_vector[2];
+        amrex::Real sz = shift_vector(2);
         Tensor::Sym12Rank3 d1_T = d1_sym_tensor(ix, iy, iz, state, ivar0);
         for (int i = 0; i < NUM_SYM_IDXS; ++i)
         {
