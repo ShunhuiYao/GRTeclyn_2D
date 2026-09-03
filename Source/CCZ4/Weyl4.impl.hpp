@@ -33,7 +33,7 @@ Weyl4::operator()(int ix, int iy, int iz,
         m_deriv.d2_sym_tensor(ix, iy, iz, state, c_h11);
 
     // Get the coordinates
-    const Coordinates coords(amrex::IntVect(ix, iy, iz), m_dx, m_center);
+    const Coordinates coords(amrex::IntVect(AMREX_D_DECL(ix, iy, iz)), m_dx, m_center);
 
     // Compute the spatial volume element
     const auto epsilon3_LUU = compute_epsilon3_LUU(vars, h_UU);
@@ -205,7 +205,7 @@ AMREX_GPU_DEVICE AMREX_FORCE_INLINE EBFields_t Weyl4::compute_EB_fields(
     // assuming the Momentum constraints are satisfied, we can make the
     // expression explicitly symmetric, which we enforce below
     // (see Alcubierre chapter 8.3, from eq. 8.3.15 onwards)
-    TensorAlgebra::make_symmetric<AMREX_SPACEDIM>(out.B);
+    TensorAlgebra::make_symmetric<DEFAULT_TENSOR_DIM>(out.B);
 
     // For CCZ4, Eij is explicitly trace-free;
     // For BSSN, only extra matter terms appear in the original expression, but
