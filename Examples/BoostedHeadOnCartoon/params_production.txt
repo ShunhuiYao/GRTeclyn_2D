@@ -1,4 +1,4 @@
-# Based on the q1-d12 configuration of https://inspirehep.net/literature/1994195
+# Production parameters for an axisymmetric head-on black-hole collision
 # Commented parameters show default or suggested values
 
 #################################################
@@ -28,16 +28,16 @@ amr.derive_plot_vars = constraints
 
 #################################################
 # BH initial data parameters
-# These parameters are mostly ignored when using TwoPunctures initial data
+# These parameters are ignored when using TwoPunctures initial data
 
 bh1.mass = 0.5
 bh2.mass = 0.5
 
-bh1.offset = 5.5 0.0 0.0
-bh2.offset = -5.5 0.0 0.0
+bh1.offset = 5.5
+bh2.offset = -5.5
 
-bh1.momentum = 0.0 0.09 0.0
-bh2.momentum = 0.0 -0.09 0.0
+bh1.momentum = -0.09
+bh2.momentum = 0.09
 
 #################################################
 # TwoPunctures initial data parameters
@@ -55,8 +55,8 @@ two_punctures.target_mass_minus = 0.5
 two_punctures.offset_plus  = 5.5
 two_punctures.offset_minus = -5.5
 
-two_punctures.momentum_plus  = 0.0 0.09 0.0
-two_punctures.momentum_minus = 0.0 -0.09 0.0
+two_punctures.momentum_plus  = -0.09 0.0 0.0
+two_punctures.momentum_minus = 0.09 0.0 0.0
 
 two_punctures.spin_plus      = 0.0 0.0 0.0
 two_punctures.spin_minus     = 0.0 0.0 0.0
@@ -85,9 +85,9 @@ two_punctures.solver_max_iterations = 250
 # Grid parameters
 
 # Number of cells and physical domain extent on the coarsest level
-amr.n_cell = 160 160 80
-geometry.prob_extent = 1024 1024 512
-# geometry.center = 512 512 0 # defaults based on the domain and boundaries
+amr.n_cell = 160 80
+geometry.prob_extent = 1024 512
+# geometry.center = 512 0 # defaults based on the domain and boundaries
 
 amr.max_level = 9 # there are max_level + 1 levels
 
@@ -118,11 +118,11 @@ amr.blocking_factor = 16
 # Boundary condition parameters
 
 # Periodic directions: 0 = false, 1 = true
-geometry.is_periodic = 0 0 0
+geometry.is_periodic = 0 0
 # Options are currently FIRST_ORDER_EXTRAPOLATION_BC, SOMMERFELD_BC,
 # or REFLECTIVE_BC
-boundary.hi_condition = "SOMMERFELD_BC" "SOMMERFELD_BC" "SOMMERFELD_BC"
-boundary.lo_condition = "SOMMERFELD_BC" "SOMMERFELD_BC" "REFLECTIVE_BC"
+boundary.hi_condition = "SOMMERFELD_BC" "SOMMERFELD_BC"
+boundary.lo_condition = "SOMMERFELD_BC" "REFLECTIVE_BC"
 
 #################################################
 # Evolution parameters
@@ -133,7 +133,7 @@ evolution.stop_time = 2500.0
 # evolution.max_steps = 1
 
 # Spatial derivative order (only affects the CCZ4 RHS)
-evolution.spatial_derivative_order = 6
+evolution.spatial_derivative_order = 4
 
 # evolution.nan_check = true
 
@@ -167,7 +167,7 @@ evolution.sigma = 0.5
 #################################################
 # Extraction parameters
 
-# weyl_extraction.center = 4 4 0 # defaults to geometry.center in all cases
+weyl_extraction.center = 512 0
 weyl_extraction.enabled = true
 weyl_extraction.num_radii = 2
 weyl_extraction.radii = 50.0 100.0

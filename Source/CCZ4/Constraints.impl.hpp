@@ -220,7 +220,7 @@ void Constraints::compute_mf(amrex::MultiFab &out_mf, int dcomp, int ncomp,
     const auto &out_arrays = out_mf.arrays();
     const auto &src_arrays = src_mf.const_arrays();
     int iham               = dcomp;
-    Interval imom          = Interval(dcomp + 1, dcomp + AMREX_SPACEDIM);
+    Interval imom          = Interval(dcomp + 1, dcomp + DEFAULT_TENSOR_DIM);
     Constraints constraints(geomdata.CellSize(0), iham, imom);
 
     amrex::ParallelFor(
