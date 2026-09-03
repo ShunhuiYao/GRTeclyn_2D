@@ -485,6 +485,8 @@ class FourthOrderDerivatives : protected DerivativeBase
                  const amrex::Array4<const amrex::Real> &state,
                  const Tensor::Rank1 &shift_vector, const int ivar) const
     {
+        // For Cartoon reduction, S_{,z} = 0 by symmetry
+        // so we don't need to compute the z advection term for a scalar
         return advection(ix, iy, iz, state, shift_vector, ivar);
     }
 
@@ -499,8 +501,17 @@ class FourthOrderDerivatives : protected DerivativeBase
         {
             int ivar = ivar0 + icomp;
             advec_vector(icomp) =
-                advection(ix, iy, iz, state, shift_vector, ivar);
+                advection(ix, iy, iz, state, shift_vector, ivar); 
         }
+#if DEFAULT_TENSOR_DIM == AMREX_SPACEDIM + 1 && AMREX_SPACEDIM == 2
+        // Add z derivative for Cartoon reduction
+        amrex::Real sz = shift_vector[2];
+        Tensor2 d1_V = d1_vector(ix, iy, iz, state, ivar0);
+        FOR(icomp)
+        {
+            advec_vector(icomp) += sz * d1_V(icomp, 2);
+        }
+#endif
         return advec_vector;
     }
 
@@ -516,6 +527,15 @@ class FourthOrderDerivatives : protected DerivativeBase
             advec_tensor(icomp, jcomp) =
                 advection(ix, iy, iz, state, shift_vector, ivar);
         }
+#if DEFAULT_TENSOR_DIM == AMREX_SPACEDIM + 1 && AMREX_SPACEDIM == 2
+        // Add z derivative for Cartoon reduction
+        amrex::Real sz = shift_vector[2];
+        Tensor3 d1_T = d1_tensor(ix, iy, iz, state, ivar0);
+        FOR(icomp, jcomp)
+        {
+            advec_tensor(icomp, jcomp) += sz * d1_T(icomp, jcomp, 2);
+        }
+#endif
         return advec_tensor;
     }
 
@@ -531,6 +551,15 @@ class FourthOrderDerivatives : protected DerivativeBase
             advec_tensor(i) =
                 advection(ix, iy, iz, state, shift_vector, ivar0 + i);
         }
+#if DEFAULT_TENSOR_DIM == AMREX_SPACEDIM + 1 && AMREX_SPACEDIM == 2
+        // Add z derivative for Cartoon reduction
+        amrex::Real sz = shift_vector[2];
+        Tensor::Sym12Rank3 d1_T = d1_sym_tensor(ix, iy, iz, state, ivar0);
+        for (int i = 0; i < NUM_SYM_IDXS; ++i)
+        {
+            advec_tensor(i) += sz * d1_T(i, 2);
+        }
+#endif
         return advec_tensor;
     }
     // NOLINTEND(readability-convert-member-functions-to-static)
