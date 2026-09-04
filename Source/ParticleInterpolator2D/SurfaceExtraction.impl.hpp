@@ -73,7 +73,7 @@ SurfaceExtraction<SurfaceGeometry, num_components>::SurfaceExtraction(
                     {
                         int idx                    = index(isurface, iu, iv);
                         m_interp_coords[idir][idx] = m_geom.get_grid_coord(
-                            idir, surface_param_value, u, v);
+                            idir, surface_param_value, u, 0.); // should not let the query point vary with phi
                     }
                 }
             }

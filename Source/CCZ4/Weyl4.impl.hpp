@@ -271,6 +271,12 @@ Weyl4::compute_null_tetrad(const CCZ4Vars &vars, const Tensor::Rank2 &h_UU,
     out.v(0) = -y;
     out.v(1) = x;
     out.v(2) = 0.0;
+//!  In head-on collision scenario, the principal axis is x-axis
+#if DEFAULT_TENSOR_DIM == AMREX_SPACEDIM + 1 && AMREX_SPACEDIM == 2
+    out.v(0) = 0;
+    out.v(1) = -z;
+    out.v(2) = y;
+#endif
 
     out.w(0) = 0.0;
     out.w(1) = 0.0;

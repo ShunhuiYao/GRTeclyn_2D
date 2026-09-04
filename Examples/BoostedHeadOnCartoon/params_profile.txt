@@ -23,8 +23,8 @@ amr.check_int = 20
 # Number of level-0 time steps between plot files; -1 disables output
 amr.plot_int = 5
 
-amr.plot_vars = ALL
-# amr.derive_plot_vars = NONE
+amr.plot_vars = NONE
+amr.derive_plot_vars = Weyl4 #NONE
 
 #################################################
 # BH initial data parameters
@@ -89,7 +89,7 @@ boundary.lo_condition = "SOMMERFELD_BC" "REFLECTIVE_BC"
 
 # dt is dx * dt_multiplier on each grid level
 # evolution.dt_multiplier = 0.25
-evolution.stop_time = 50
+evolution.stop_time = 300
 # evolution.max_steps = 1
 
 # Spatial derivative order (only affects the CCZ4 RHS)
@@ -134,7 +134,7 @@ weyl_extraction.radii = 55 75
 weyl_extraction.levels = 3 2
 weyl_extraction.num_points_phi = 32
 weyl_extraction.num_points_theta = 49
-# weyl_extraction.write = false
+weyl_extraction.write = true #false
 # weyl_extraction.num_modes = 3
 # weyl_extraction.modes = 2 0  2 1  2 2
 
