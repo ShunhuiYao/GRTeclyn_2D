@@ -11,6 +11,7 @@
 #include "DerivativeBase.hpp"
 #include "StateVariables.hpp"
 #include "Tensor.hpp"
+#include <AMReX_Array4.H>
 #include <AMReX_REAL.H>
 #include <array>
 
