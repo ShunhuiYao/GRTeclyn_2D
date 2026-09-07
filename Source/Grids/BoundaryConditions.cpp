@@ -13,6 +13,7 @@
 
 namespace
 {
+// NOLINTNEXTLINE(bugprone-throwing-static-initialization)    
 const std::map<std::string, int> boundary_conditions_by_name = {
     {"UNSET_BC",                     BoundaryConditions::UNSET_BC     },
     {"FIRST_ORDER_EXTRAPOLATION_BC",
@@ -256,8 +257,6 @@ void BoundaryConditions::apply_sommerfeld_boundaries(
         }
     }
 
-    // AMREX_ASSERT(amrex::almostEqual(m_geom.CellSize(0), m_geom.CellSize(1)) &&
-    //              amrex::almostEqual(m_geom.CellSize(0), m_geom.CellSize(2)));
     FORSPACEDIM(idir)
     {
         AMREX_ASSERT(amrex::almostEqual(m_geom.CellSize(0),

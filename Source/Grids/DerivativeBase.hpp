@@ -9,7 +9,9 @@
 #include "DimensionDefinitions.hpp"
 
 #include <AMReX_REAL.H>
+#include <cstddef>
 #include "AMReX_Array.H"
+#include "AMReX_Array4.H"
 
 class DerivativeBase
 {
